@@ -1,0 +1,68 @@
+.main{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  height: 100vh;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.video{
+  display: flex;
+  align-items: center;
+}
+
+.canva{
+  position: absolute;
+  border: 1px solid black;
+}
+
+.appface{
+  display: flex;
+  width: 100vw;
+  flex-direction: flex;
+  align-items: start;
+  justify-content: start;
+}
+.botonT{
+  border: none;
+  margin: 30px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #1E90FF;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.botonT:hover{
+  background-color: #00BFFF;
+}
+.botonC{
+  border: none;
+  margin: 30px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #b0d023;
+  color: rgb(44, 14, 14);
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.botonC:hover{
+  background-color: #bcd83e;
+}
+.botonD{
+  border: none;
+  margin: 30px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #3fc82d;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.botonD:hover{
+  background-color: #68d859;
+}
