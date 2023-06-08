@@ -20,37 +20,12 @@ const Delete = () => {
     );
   };
 
-  const dataURItoBlob = (dataURI) => {
-    const byteString = atob(dataURI.split(',')[1]);
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i += 1) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([ab], { type: 'image/png' });
-    console.log(blob);
-    return blob;
-  };
-
-  const blobToDataURL = (blob: Blob) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.readAsDataURL(blob);
-    });
-  };
-
-  const takePhoto = () => {
+  const takePhoto = async () => {
     const context = canvas2Ref.current.getContext('2d');
     context.drawImage(viedoRef.current, 0, 0, 320, 240);
+    //convertir la imagen a base64
     const data = canvas2Ref.current.toDataURL('image/png');
-    //convertir la imagen a blob
-    const blob = dataURItoBlob(data);
-
-    localStorage.setItem('photo', blob);
+    localStorage.setItem('photo', data);
   };
 
   const clearPhoto = () => {
@@ -63,29 +38,13 @@ const Delete = () => {
     );
   };
 
-  // const drawImage = () => {
-  //   const context = canvas2Ref.current.getContext('2d');
-  //   const data = localStorage.getItem('photo');
-  //   //convertir blob a dataURI
-  //   const dataURI = URL.createObjectURL(data);
-  //   const image = new Image();
-  //   image.src = dataURI;
-  //   image.onload = () => {
-  //     context.drawImage(image, 0, 0);
-  //   };
-  // };
-
-  const drawImg = () => {
+  const drawImage = () => {
     const context = canvas2Ref.current.getContext('2d');
-    let savedBlob = localStorage.getItem('photo');
-    let data = blobToDataURL(savedBlob);
-    console.log(data);
-
-    const dataURI = URL.createObjectURL(data);
-    const image = new Image();
-    image.src = dataURI;
-    image.onload = () => {
-      context.drawImage(image, 0, 0);
+    const data = localStorage.getItem('photo');
+    const img = new Image();
+    img.src = data;
+    img.onload = () => {
+      context.drawImage(img, 0, 0);
     };
   };
 
@@ -141,7 +100,7 @@ const Delete = () => {
         <button className="botonC" onClick={clearPhoto}>
           Limpiar
         </button>
-        <button className="botonD" onClick={drawImg}>
+        <button className="botonD" onClick={drawImage}>
           Dibujar
         </button>
       </div>
