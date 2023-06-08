@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Delete from './components/delete';
+import Enrollment from './pages/Enrollment';
+import GlobalStyle from './styles/global';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Delete />
+    <GlobalStyle />
+    <Enrollment />
   </React.StrictMode>
 );
