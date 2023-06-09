@@ -46,7 +46,7 @@ export const insertGymUser = async (req, res) => {
     const user = await UsuariosGymModel.create({
       nombre: body.nombre,
       apellido: body.apellido,
-      imagenPerfil: foto,
+      imagenPerfil: Buffer.from(body.foto, 'base64');,
       genero: body.genero,
       fechaNacimiento: body.fechaNacimiento,
       numeroTelefono: body.numeroTelefono,
