@@ -1,5 +1,8 @@
 import Joi from 'joi';
 import UsuariosGymModel from './gymUser.Model';
+import MembershipModel from '../Memberships/Membership.Model';
+import UserPaymentModel from '../userPayment/userPayment.Model';
+import { databaseConnection } from'Server/db'
 
 export const getGymUsers = async (req, res) => {
   try {
@@ -18,44 +21,47 @@ export const getGymUsers = async (req, res) => {
   }
 };
 export const insertGymUserWithPayment = async (req, res) => {
-  const { body, file } = req;
+  const { body } = req;
 
   try {
-    await sequelize.transaction(async (transaction) => {
-      const schema = Joi.object({
-        nombre: Joi.string().required(),
-        apellido: Joi.string().required(),
-        foto: Joi.string().required(),
-        genero: Joi.string().required(),
-        fechaNacimiento: Joi.date().required(),
-        numeroTelefono: Joi.string().required(),
-        membresia: Joi.number().required()
+    const schema = Joi.object({
+      nombre: Joi.string().required(),
+      apellido: Joi.string().required(),
+      foto: Joi.string().required(),
+      genero: Joi.string().required(),
+      fechaNacimiento: Joi.date().required(),
+      numeroTelefono: Joi.string().required(),
+      membresia: Joi.number().required(),
+    });
+
+    const { error } = schema.validate(body);
+    if (error) {
+      return res.status(400).json({
+        message: 'Error al crear el usuario, todos los campos son requeridos',
+        error: error.details[0].message,
       });
+    }
 
-      const { error } = schema.validate(body);
-      if (error) {
-        return res.status(400).json({
-          message: 'Error al crear el usuario, todos los campos son requeridos',
-          error: error.details[0].message
-        });
-      }
+    const membership = await MembershipModel.findByPk(body.membresia);
+    if (!membership) {
+      return res.status(404).json({
+        message: 'La membresia no existe',
+      });
+    }
 
-      const membership = await MembershipModel.findByPk(body.membresia);
-      if (!membership) {
-        return res.status(404).json({
-          message: 'La membresia no existe'
-        });
-      }
-
-      const user = await UsuariosGymModel.create({
-        nombre: body.nombre,
-        apellido: body.apellido,
-        imagenPerfil: Buffer.from(body.foto, 'base64'),
-        genero: body.genero,
-        fechaNacimiento: body.fechaNacimiento,
-        numeroTelefono: body.numeroTelefono,
-        estadoUsuario: 0
-      }, { transaction });
+    const user = await databaseConnection.transaction(async (transaction) => {
+      const createdUser = await UsuariosGymModel.create(
+        {
+          nombre: body.nombre,
+          apellido: body.apellido,
+          imagenPerfil: Buffer.from(body.foto, 'base64'),
+          genero: body.genero,
+          fechaNacimiento: body.fechaNacimiento,
+          numeroTelefono: body.numeroTelefono,
+          estadoUsuario: 0,
+        },
+        { transaction }
+      );
 
       const fechaPago = new Date();
       const fechaFinPago = new Date();
@@ -63,28 +69,34 @@ export const insertGymUserWithPayment = async (req, res) => {
       fechaPago.setDate(new Date().getDate());
       fechaFinPago.setDate(new Date().getDate() + membership.duracionMembresia);
 
-      const userPayment = await UserPaymentModel.create({
-        fechaPago,
-        fechaFinPago,
-        estadoPago: 0,
-        idUsuario: user.id,
-        idMembresia: parseInt(body.idMembresia, 10)
-      }, { transaction });
+      const userPayment = await UserPaymentModel.create(
+        {
+          fechaPago,
+          fechaFinPago,
+          estadoPago: 0,
+          idUsuario: createdUser.idUsuario,
+          idMembresia: parseInt(body.membresia, 10),
+        },
+        { transaction }
+      );
 
-      return res.status(201).json({
-        message: `Pago de usuario ${user.nombre} insertado correctamente con la membresia ${membership.descripcion}`,
-        userPayment,
-        user
-      });
+      return createdUser;
+    });
+
+    return res.status(201).json({
+      message: `Pago de usuario ${body.nombre} insertado correctamente con la membresia ${membership.descripcion}`,
+      user,
     });
   } catch (error) {
-    await transaction.rollback();
+    console.log(error);
     return res.status(500).json({
       message: 'Error al crear el pago de usuario',
-      error: error.message
+      error: error.message,
     });
   }
 };
+
+
 
 
 export const updateGymUser = async (req, res) => {
