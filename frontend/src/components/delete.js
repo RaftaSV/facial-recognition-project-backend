@@ -77,6 +77,15 @@ const Delete = () => {
       faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
     }, 100);
   };
+
+  const detectFaceFromCamera = async () => {
+    const detections = await faceapi.detectSingleFace(
+      viedoRef.current,
+      new faceapi.TinyFaceDetectorOptions()
+    );
+    console.log(detections);
+  };
+
   return (
     <div className="main">
       <div className="appface">
