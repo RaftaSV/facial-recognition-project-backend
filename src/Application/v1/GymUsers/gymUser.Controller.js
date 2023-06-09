@@ -25,6 +25,7 @@ export const insertGymUser = async (req, res) => {
     const schema = Joi.object({
       nombre: Joi.string().required(),
       apellido: Joi.string().required(),
+      foto: Joi.string().required(),
       genero: Joi.string().required(),
       fechaNacimiento: Joi.date().required(),
       numeroTelefono: Joi.string().required()
@@ -39,20 +40,13 @@ export const insertGymUser = async (req, res) => {
       });
     }
 
-    if (!file) {
-      return res.status(400).json({
-        message: 'Error al crear el usuario, La imagen de perfil es requerida'
-      });
-    }
 
-    // Obtener la imagen en formato buffer
-    const imageBuffer = file.buffer;
 
-    // Guardar la imagen en la base de datos
+    // Guardar los datos en la base de datos
     const user = await UsuariosGymModel.create({
       nombre: body.nombre,
       apellido: body.apellido,
-      imagenPerfil: imageBuffer,
+      imagenPerfil: foto,
       genero: body.genero,
       fechaNacimiento: body.fechaNacimiento,
       numeroTelefono: body.numeroTelefono,
