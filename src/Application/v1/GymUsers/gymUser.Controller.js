@@ -1,8 +1,9 @@
 import Joi from 'joi';
+import fs from 'fs';
 import UsuariosGymModel from './gymUser.Model';
-import MembershipModel from '../Memberships/Membership.Model';
 import UserPaymentModel from '../userPayment/userPayment.Model';
-import { databaseConnection } from'Server/db'
+import MembershipModel from '../Memberships/Membership.Model';
+import { databaseConnection } from 'Server/db';
 
 export const getGymUsers = async (req, res) => {
   try {
@@ -20,6 +21,7 @@ export const getGymUsers = async (req, res) => {
     });
   }
 };
+
 export const insertGymUserWithPayment = async (req, res) => {
   const { body } = req;
 
@@ -49,12 +51,17 @@ export const insertGymUserWithPayment = async (req, res) => {
       });
     }
 
+    // Guardar la imagen en un archivo temporal
+    const imageData = Buffer.from(body.foto, 'base64');
+    const imagePath = `public/uploads/image_${Date.now()}.jpg`;
+    fs.writeFileSync(imagePath, imageData);
+
     const user = await databaseConnection.transaction(async (transaction) => {
       const createdUser = await UsuariosGymModel.create(
         {
           nombre: body.nombre,
           apellido: body.apellido,
-          imagenPerfil: Buffer.from(body.foto, 'base64'),
+          imagenPerfil: fs.readFileSync(imagePath),
           genero: body.genero,
           fechaNacimiento: body.fechaNacimiento,
           numeroTelefono: body.numeroTelefono,
@@ -80,6 +87,9 @@ export const insertGymUserWithPayment = async (req, res) => {
         { transaction }
       );
 
+      // Eliminar el archivo temporal después de guardarlo en la base de datos
+     fs.unlinkSync(imagePath);
+
       return createdUser;
     });
 
@@ -95,8 +105,6 @@ export const insertGymUserWithPayment = async (req, res) => {
     });
   }
 };
-
-
 
 
 export const updateGymUser = async (req, res) => {
