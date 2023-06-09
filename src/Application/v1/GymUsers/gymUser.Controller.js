@@ -5,15 +5,15 @@ export const getGymUsers = async (req, res) => {
   try {
     const usuariosGym = await UsuariosGymModel.findAll({
       where: {
-        estadoUsuario: 0
-      }
+        estadoUsuario: 0,
+      },
     });
 
     return res.status(200).json(usuariosGym);
   } catch (error) {
     return res.status(500).json({
       message: 'Error al obtener los usuarios',
-      error
+      error,
     });
   }
 };
@@ -25,6 +25,7 @@ export const insertGymUser = async (req, res) => {
     const schema = Joi.object({
       nombre: Joi.string().required(),
       apellido: Joi.string().required(),
+      imagenPerfil: Joi.string().required(),
       genero: Joi.string().required(),
       fechaNacimiento: Joi.date().required(),
       numeroTelefono: Joi.string().required()
@@ -39,20 +40,11 @@ export const insertGymUser = async (req, res) => {
       });
     }
 
-    if (!file) {
-      return res.status(400).json({
-        message: 'Error al crear el usuario, La imagen de perfil es requerida'
-      });
-    }
-
-    // Obtener la imagen en formato buffer
-    const imageBuffer = file.buffer;
-
-    // Guardar la imagen en la base de datos
+    // Guardar los datos en la base de datos
     const user = await UsuariosGymModel.create({
       nombre: body.nombre,
       apellido: body.apellido,
-      imagenPerfil: imageBuffer,
+      imagenPerfil: body.imagenPerfil,
       genero: body.genero,
       fechaNacimiento: body.fechaNacimiento,
       numeroTelefono: body.numeroTelefono,
@@ -80,7 +72,7 @@ export const updateGymUser = async (req, res) => {
     const user = await UsuariosGymModel.findByPk(idUsuario);
     if (!user) {
       return res.status(404).json({
-        message: 'Usuario no encontrado'
+        message: 'Usuario no encontrado',
       });
     }
 
@@ -103,12 +95,12 @@ export const updateGymUser = async (req, res) => {
 
     return res.status(200).json({
       message: 'Usuario actualizado correctamente',
-      user
+      user,
     });
   } catch (error) {
     return res.status(500).json({
       message: 'Error al actualizar el usuario',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -120,19 +112,19 @@ export const deleteGymUser = async (req, res) => {
     const user = await UsuariosGymModel.findByPk(idUsuario);
     if (!user) {
       return res.status(404).json({
-        message: 'Usuario no encontrado'
+        message: 'Usuario no encontrado',
       });
     }
     user.estadoUsuario = 1;
     await user.save();
     return res.status(200).json({
       message: 'Usuario eliminado correctamente',
-      user
+      user,
     });
   } catch (error) {
     return res.status(500).json({
       message: 'Error al eliminar el usuario',
-      error: error.message
+      error: error.message,
     });
   }
 };
