@@ -1,69 +1,115 @@
-import React, { useState, useRef } from 'react';
-import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
+import React, { useEffect } from 'react';
+
+import '../styles/global.js';
 
 const Delete = () => {
+  const viedoRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
 
-  const webcamRef = useRef(null);
-  const [photoBlob, setPhotoBlob] = useState(null);
+  useEffect(() => {
+    startVideo();
+    loadModels();
+  });
 
-  const capturePhoto = async () => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    const blob = await fetch(imageSrc).then((res) => res.blob());
-    setPhotoBlob(blob);
-    localStorage.setItem('photoBlob', blob);
+  //inicio de la camara
+  const startVideo = () => {
+    navigator.getUserMedia(
+      { video: {} },
+      (stream) => (viedoRef.current.srcObject = stream),
+      (err) => console.error(err)
+    );
   };
 
-  const clearPhoto = () => {
-    setPhotoBlob(null);
-    localStorage.removeItem('photoBlob');
-  };
-
-  const drawPhoto = () => {
-    if (photoBlob) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        document.body.appendChild(canvas);
-      };
-
-      const blobUrl = URL.createObjectURL(photoBlob);
-      img.src = blobUrl;
-    }
-  };
-
+  //cargar los modelos
   const loadModels = async () => {
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-      faceapi.nets.faceExpressionNet.loadFromUri('/models')
-    ]);
+    const MODEL_URL = '/models';
+    Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+      faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+    ]).then(() => {
+      faceMyDetector();
+    });
   };
 
-  const startApp = async () => {
-    await loadModels();
-    console.log('Models loaded.');
+  const faceMyDetector = async () => {
+    const labeledFaceDescriptors = await getDescriptors();
+    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+
+    setInterval(async () => {
+      const detections = await faceapi
+        .detectAllFaces(viedoRef.current, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors();
+      canvasRef.current.innerHTML = faceapi.createCanvasFromMedia(
+        viedoRef.current
+      );
+      faceapi.matchDimensions(canvasRef.current, viedoRef.current);
+      const resizedDetections = faceapi.resizeResults(detections, {
+        width: 320,
+        height: 240,
+      });
+      faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
+
+      ///***********
+      const results = resizedDetections.map((d) => {
+        return faceMatcher.findBestMatch(d.descriptor);
+      });
+      results.forEach((result, i) => {
+        const box = resizedDetections[i].detection.box;
+        const drawBox = new faceapi.draw.DrawBox(box, {
+          label: result,
+        });
+        if (result._label === 'unknown') {
+          console.log('desconocido');
+        } else {
+          console.log('conocido');
+        }
+        drawBox.draw(canvasRef.current);
+      });
+    }, 100);
   };
 
-  startApp();
+  ////********************************************************  */
+  const getDescriptors = async () => {
+    const users = JSON.parse(localStorage.getItem('data'));
+    return Promise.all(
+      users.map(async (user) => {
+        const descriptions = [];
+        //cargar objeto img con la imagen en base64
+        const img = await faceapi.fetchImage(user.imagenPerfil);
+        //detectar rostro
+        const detections = await faceapi
+          .detectSingleFace(img)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+        descriptions.push(detections.descriptor);
+        return new faceapi.LabeledFaceDescriptors(user.nombre, descriptions);
+      })
+    );
+  };
 
   return (
-    <div className="App">
-      <h1>Face Recognition App</h1>
-      <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" />
-      <div>
-        <button onClick={capturePhoto}>Tomar Foto</button>
-        <button onClick={clearPhoto}>Limpiar</button>
-        <button onClick={drawPhoto}>Dibujar Foto</button>
+    <div className="main">
+      <div className="appface">
+        <div className="video">
+          <video
+            crossOrigin="anonymous"
+            ref={viedoRef}
+            autoPlay
+            width={320}
+            height={240}
+          ></video>
+        </div>
+        <div className="canva">
+          <canvas ref={canvasRef} width={320} height={240} id="canva1"></canvas>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default Delete;
