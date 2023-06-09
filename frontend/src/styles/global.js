@@ -8,6 +8,19 @@ const GlobalStyle = createGlobalStyle`
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
     background: #21295C;
-  }`
+  }
 
-  export default GlobalStyle;
+  .appface{
+    display: flex;
+    width: 100vw;
+    flex-direction: flex;
+    align-items: start;
+    justify-content: start;
+  }
+  .canva{
+    position: absolute;
+  }
+
+  `;
+
+export default GlobalStyle;
