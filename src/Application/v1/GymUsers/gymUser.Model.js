@@ -9,7 +9,7 @@ const UsuariosGymModel = databaseConnection.define('Usuarios', {
   },
   nombre: sequelize.STRING,
   apellido: sequelize.STRING,
-  imagenPerfil: sequelize.BLOB,
+  imagenPerfil: sequelize.STRING,
   genero: sequelize.STRING,
   fechaNacimiento: sequelize.DATEONLY,
   numeroTelefono: sequelize.STRING,
