@@ -86,6 +86,10 @@
     margin-top: 1rem;
 }
 
+.capture:hover {
+    background-color: #CDDFE8;
+}
+
 .button {
     background-color: #4c8c72;
     color: #fff;
@@ -100,4 +104,31 @@
 
 .button:hover {
     background-color: #408665;
+}
+
+.button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.capturada {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #3e8850;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+.nocapturada {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #ff6b6b;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 10px;
 }
