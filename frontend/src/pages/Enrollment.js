@@ -50,7 +50,7 @@ const Enrollment = () => {
     setFechaNacimiento(event.target.value);
   };
 
-  localStorage.setItem('data', JSON.stringify(data));
+  //localStorage.setItem('data', JSON.stringify(data));
 
   const handleMembresiaChange = (event) => {
     setMembresia(event.target.value);
@@ -76,7 +76,7 @@ const Enrollment = () => {
     reader.onloadend = () => {
       const base64data = reader.result;
       setPhotoData(base64data);
-      //localStorage.setItem('photoBlob', base64data);
+      localStorage.setItem('photoBlob', base64data);
     };
 
     setShowCaption(true);
@@ -88,20 +88,38 @@ const Enrollment = () => {
   const collectData = async (event) => {
     event.preventDefault();
 
+    //FOR DATABASE
+    // const formData = {
+    //   nombre: nombres,
+    //   apellido: apellidos,
+    //   imagenPerfil: photoData, // Obtener la foto previamente guardada en el localStorage
+    //   genero: sexo,
+    //   fechaNacimiento: fechaNacimiento,
+    //   numeroTelefono: telefono,
+    // };
+
+    //FOR LOCALSTORAGE
     const formData = {
       nombre: nombres,
       apellido: apellidos,
-      imagenPerfil: photoData, // Obtener la foto previamente guardada en el localStorage
-      genero: sexo,
+      sexo: sexo,
       fechaNacimiento: fechaNacimiento,
-      numeroTelefono: telefono,
+      telefono: telefono,
+      membresia: membresia,
+      imagenPerfil: localStorage.getItem('photoBlob'), // Obtener la foto previamente guardada en el localStorage
     };
 
+    //FOR DATABASE
+    // await mutationFunc({
+    //   method: 'post',
+    //   variables: formData
+    // });
 
-    await mutationFunc({
-      method: 'post',
-      variables: formData
-    });
+    // Guardar los datos en un array en el localStorage
+    const dataFORM = JSON.parse(localStorage.getItem('data')) || [];
+    await dataFORM.push(formData);
+
+    localStorage.setItem('data', JSON.stringify(dataFORM));
 
     setShowModal(true);
   }

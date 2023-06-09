@@ -9,18 +9,6 @@ const GlobalStyle = createGlobalStyle`
     sans-serif;
     background: #21295C;
   }
-
-  .appface{
-    display: flex;
-    width: 100vw;
-    flex-direction: flex;
-    align-items: start;
-    justify-content: start;
-  }
-  .canva{
-    position: absolute;
-  }
-
   `;
 
 export default GlobalStyle;
